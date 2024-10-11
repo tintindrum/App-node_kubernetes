@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-app
+  template:
+    metadata:
+      labels:
+        app: node-app
+    spec:
+      imagePullSecrets:
+      - name: ecr-registry-secret  # Reference secret
+      containers:
+      - name: node-app
+        image: 288761756077.dkr.ecr.us-east-1.amazonaws.com/node-app:latest  
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: MONGODB_URI
+          value: "mongodb://mongodb:27017/my-database"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-app
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+  selector:
+    app: node-app
+  type: LoadBalancer  # Use NodePort if not in a cloud environment
